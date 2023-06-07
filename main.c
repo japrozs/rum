@@ -191,7 +191,7 @@ const char* get_tag_name(uint8_t tag)
     }
 }
 
-const char* get_flag(unsigned short flag)
+char* get_flag(unsigned short flag)
 {
     char* ret = malloc(sizeof(char) * 256);
 
@@ -310,11 +310,13 @@ void pretty_print()
     }
     printf("fields                -> %s", class.fields_count == 0 ? "[]\n" : "\n");
     for (size_t i = 0; i < class.fields_count; i++) {
+        char* access_flags = get_flag(class.fields[i].access_flags);
         printf("\taccess_flags          : %s\n"
                "\tname_index            : %d\n"
                "\tdescriptor_index      : %d\n"
                "\tattributes_count      : %d\n",
-            get_flag(class.fields[i].access_flags), class.fields[i].name_index, class.fields[i].descriptor_index, class.fields[i].attributes_count);
+            access_flags, class.fields[i].name_index, class.fields[i].descriptor_index, class.fields[i].attributes_count);
+        free(access_flags);
         printf("\tattributes            -> %s", class.fields[i].attributes_count == 0 ? "[]\n" : "\n");
         for (size_t k = 0; k < class.fields[i].attributes_count; k++) {
             printf("\t\tattribute_name_index    : %d\n"
