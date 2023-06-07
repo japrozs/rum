@@ -75,7 +75,6 @@ struct constant_string_t {
     unsigned short string_index;
 };
 
-// TODO: complete this struct
 struct constant_interface_methodref_t {
     unsigned short class_index;
     unsigned short name_and_type_index;
@@ -233,6 +232,36 @@ const char* get_flag(unsigned short flag)
         PRINT_FLAG(ret, "ACC_SYNTHETIC");
     }
     return strlen(ret) == 0 ? "<unknown flag>" : ret;
+}
+
+void cleanup()
+{
+    for (int i = 0; i < class.constant_pool_count; i++) {
+        if (class.constant_pool[i].tag == CONSTANT_Utf8) {
+            free(class.constant_pool[i].constant_utf8.bytes);
+        }
+    }
+    free(class.constant_pool);
+    free(class.interfaces);
+    for (int i = 0; i < class.fields_count; i++) {
+        for (int j = 0; j < class.fields[i].attributes_count; j++) {
+            free(class.fields[i].attributes[j].info);
+        }
+        free(class.fields[i].attributes);
+    }
+    free(class.fields);
+
+    for (int i = 0; i < class.methods_count; i++) {
+        for (int j = 0; j < class.methods[i].attributes_count; j++) {
+            free(class.methods[i].attributes[j].info);
+        }
+        free(class.methods[i].attributes);
+    }
+    free(class.methods);
+    for (int i = 0; i < class.attribute_count; i++) {
+        free(class.attributes[i].info);
+    }
+    free(class.attributes);
 }
 
 void pretty_print()
@@ -655,13 +684,15 @@ int main(int argc, char** argv)
     }
     FILE* file = fopen(argv[1], "rb");
     if (file == NULL) {
-        printf("[-] couldn't open file 'Main.class'\n");
+        printf("[-] couldn't open file '%s'\n", argv[1]);
         return EXIT_FAILURE;
     }
 
     // parse the file and map it into the `class_t` struct
     parse_file(file);
     pretty_print();
+    // cleanup();
+    // fclose(file);
 
     return EXIT_SUCCESS;
 }
