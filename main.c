@@ -156,33 +156,80 @@ unsigned short le_to_be(unsigned short bytes)
     return result;
 }
 
+const char* get_tag_name(uint8_t tag)
+{
+    switch (tag) {
+    case CONSTANT_Class:
+        return "CONSTANT_Class";
+    case CONSTANT_Fieldref:
+        return "CONSTANT_Fieldref";
+    case CONSTANT_Methodref:
+        return "CONSTANT_Methodref";
+    case CONSTANT_InterfaceMethodref:
+        return "CONSTANT_InterfaceMethodref";
+    case CONSTANT_String:
+        return "CONSTANT_String";
+    case CONSTANT_Integer:
+        return "CONSTANT_Integer";
+    case CONSTANT_Float:
+        return "CONSTANT_Float";
+    case CONSTANT_Long:
+        return "CONSTANT_Long";
+    case CONSTANT_Double:
+        return "CONSTANT_Double";
+    case CONSTANT_NameAndType:
+        return "CONSTANT_NameAndType";
+    case CONSTANT_Utf8:
+        return "CONSTANT_Utf8";
+    case CONSTANT_MethodHandle:
+        return "CONSTANT_MethodHandle";
+    case CONSTANT_MethodType:
+        return "CONSTANT_MethodType";
+    case CONSTANT_InvokeDynamic:
+        return "CONSTANT_InvokeDynamic";
+    default:
+        return "<unknown tag>";
+    }
+}
+
 const char* get_flag(unsigned short flag)
 {
     char* ret = malloc(sizeof(char) * 256);
 
     if (flag & ACC_PUBLIC) {
         PRINT_FLAG(ret, "ACC_PUBLIC");
-    } else if (flag & ACC_PRIVATE) {
+    }
+    if (flag & ACC_PRIVATE) {
         PRINT_FLAG(ret, "ACC_PRIVATE");
-    } else if (flag & ACC_PROTECTED) {
+    }
+    if (flag & ACC_PROTECTED) {
         PRINT_FLAG(ret, "ACC_PROTECTED");
-    } else if (flag & ACC_STATIC) {
+    }
+    if (flag & ACC_STATIC) {
         PRINT_FLAG(ret, "ACC_STATIC");
-    } else if (flag & ACC_FINAL) {
+    }
+    if (flag & ACC_FINAL) {
         PRINT_FLAG(ret, "ACC_FINAL");
-    } else if (flag & ACC_SYNCHRONIZED) {
+    }
+    if (flag & ACC_SYNCHRONIZED) {
         PRINT_FLAG(ret, "ACC_SYNCHRONIZED");
-    } else if (flag & ACC_BRIDGE) {
+    }
+    if (flag & ACC_BRIDGE) {
         PRINT_FLAG(ret, "ACC_BRIDGE");
-    } else if (flag & ACC_VARARGS) {
+    }
+    if (flag & ACC_VARARGS) {
         PRINT_FLAG(ret, "ACC_VARARGS");
-    } else if (flag & ACC_NATIVE) {
+    }
+    if (flag & ACC_NATIVE) {
         PRINT_FLAG(ret, "ACC_NATIVE");
-    } else if (flag & ACC_ABSTRACT) {
+    }
+    if (flag & ACC_ABSTRACT) {
         PRINT_FLAG(ret, "ACC_ABSTRACT");
-    } else if (flag & ACC_STRICT) {
+    }
+    if (flag & ACC_STRICT) {
         PRINT_FLAG(ret, "ACC_STRICT");
-    } else if (flag & ACC_SYNTHETIC) {
+    }
+    if (flag & ACC_SYNTHETIC) {
         PRINT_FLAG(ret, "ACC_SYNTHETIC");
     }
     return strlen(ret) == 0 ? "<unknown flag>" : ret;
@@ -207,7 +254,7 @@ void pretty_print()
     printf("interfaces           -> %s", class.interfaces_count == 0 ? "[]\n" : "\n");
     printf("constant_pool        -> %s", class.constant_pool_count == 0 ? "[]\n" : "\n");
     for (size_t i = 0; i < class.constant_pool_count - 1; i++) {
-        printf("\ttag                   : %d\n", class.constant_pool[i].tag);
+        printf("\ttag                   : %s\n", get_tag_name(class.constant_pool[i].tag));
         if (class.constant_pool[i].tag == CONSTANT_Methodref) {
             printf("\tclass_index           : %d\n", class.constant_pool[i].constant_methodref.class_index);
             printf("\tname_and_type_index   : %d\n", class.constant_pool[i].constant_methodref.name_and_type_index);
