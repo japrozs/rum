@@ -328,11 +328,13 @@ void pretty_print()
     }
     printf("methods               -> %s", class.methods_count == 0 ? "[]\n" : "\n");
     for (size_t i = 0; i < class.methods_count; i++) {
+        char* access_flags = get_flag(class.methods[i].access_flags);
         printf("\taccess_flags          : %s\n"
                "\tname_index            : %d\n"
                "\tdescriptor_index      : %d\n"
                "\tattributes_count      : %d\n",
-            get_flag(class.methods[i].access_flags), class.methods[i].name_index, class.methods[i].descriptor_index, class.methods[i].attributes_count);
+            access_flags, class.methods[i].name_index, class.methods[i].descriptor_index, class.methods[i].attributes_count);
+        free(access_flags);
         printf("\tattributes            -> %s", class.methods[i].attributes_count == 0 ? "[]\n" : "\n");
         for (size_t k = 0; k < class.methods[i].attributes_count; k++) {
             printf("\t\tattribute_name_index    : %d\n"
@@ -693,8 +695,8 @@ int main(int argc, char** argv)
     // parse the file and map it into the `class_t` struct
     parse_file(file);
     pretty_print();
-    // cleanup();
-    // fclose(file);
+    cleanup();
+    fclose(file);
 
     return EXIT_SUCCESS;
 }
