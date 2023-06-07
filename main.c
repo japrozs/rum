@@ -38,6 +38,11 @@
 #define ACC_STRICT 0x0800
 #define ACC_SYNTHETIC 0x1000
 
+// helpful macros
+#define READ_U2(var) fread(var, sizeof(unsigned short), 1, file)
+#define SWAP(var) var = le_to_be(var) // swap the endian-ness of an unsigned short
+#define ALLOC(type, count) (type *)malloc(sizeof(type) * (count))
+
 struct constant_methodref_t
 {
 	unsigned short class_index;
@@ -143,12 +148,12 @@ void parse_file(FILE *file)
 {
 	// read headers from file
 	fread(&class.magic, sizeof(uint32_t), 1, file);
-	fread(&class.minor, sizeof(unsigned short), 1, file);
-	fread(&class.major, sizeof(unsigned short), 1, file);
-	fread(&class.constant_pool_count, sizeof(unsigned short), 1, file);
-	class.constant_pool_count = le_to_be(class.constant_pool_count);
+	READ_U2(&class.minor);
+	READ_U2(&class.major);
+	READ_U2(&class.constant_pool_count);
+	SWAP(class.constant_pool_count);
 
-	class.constant_pool = (struct cp_info_t *)malloc(sizeof(struct cp_info_t) * (class.constant_pool_count - 1));
+	class.constant_pool = ALLOC(struct cp_info_t, class.constant_pool_count - 1);
 	for (size_t i = 0; i < class.constant_pool_count - 1; i++)
 	{
 		uint8_t tag;
@@ -158,8 +163,8 @@ void parse_file(FILE *file)
 		case CONSTANT_Class:
 		{
 			unsigned short name_index;
-			fread(&name_index, sizeof(unsigned short), 1, file);
-			name_index = le_to_be(name_index);
+			READ_U2(&name_index);
+			SWAP(name_index);
 
 			struct cp_info_t cp_info = {
 				.tag = tag,
@@ -172,20 +177,23 @@ void parse_file(FILE *file)
 		case CONSTANT_Fieldref:
 		{
 			unsigned short class_index, name_and_type_index;
-			fread(&class_index, sizeof(unsigned short), 1, file);
-			fread(&name_and_type_index, sizeof(unsigned short), 1, file);
+			READ_U2(&class_index);
+			READ_U2(&name_and_type_index);
 
-			class_index = le_to_be(class_index);
-			name_and_type_index = le_to_be(name_and_type_index);
+			SWAP(class_index);
+			SWAP(name_and_type_index);
+
+			// TODO: create a struct and store the above values
 			break;
 		}
 		case CONSTANT_Methodref:
 		{
 			unsigned short class_index, name_and_type_index;
-			fread(&class_index, sizeof(unsigned short), 1, file);
-			fread(&name_and_type_index, sizeof(unsigned short), 1, file);
-			class_index = le_to_be(class_index);
-			name_and_type_index = le_to_be(name_and_type_index);
+			READ_U2(&class_index);
+			READ_U2(&name_and_type_index);
+
+			SWAP(class_index);
+			SWAP(name_and_type_index);
 
 			struct cp_info_t cp_info =
 				{
@@ -204,8 +212,8 @@ void parse_file(FILE *file)
 		case CONSTANT_String:
 		{
 			unsigned short string_index;
-			fread(&string_index, sizeof(unsigned short), 1, file);
-			string_index = le_to_be(string_index);
+			READ_U2(&string_index);
+			SWAP(string_index);
 
 			struct cp_info_t cp_info = {
 				.tag = tag,
@@ -237,11 +245,11 @@ void parse_file(FILE *file)
 		case CONSTANT_NameAndType:
 		{
 			unsigned short name_index, descriptor_index;
-			fread(&name_index, sizeof(unsigned short), 1, file);
-			fread(&descriptor_index, sizeof(unsigned short), 1, file);
+			READ_U2(&name_index);
+			READ_U2(&descriptor_index);
 
-			name_index = le_to_be(name_index);
-			descriptor_index = le_to_be(descriptor_index);
+			SWAP(name_index);
+			SWAP(descriptor_index);
 
 			struct cp_info_t cp_info = {
 				.tag = tag,
@@ -255,10 +263,10 @@ void parse_file(FILE *file)
 		case CONSTANT_Utf8:
 		{
 			unsigned short length;
-			fread(&length, sizeof(unsigned short), 1, file);
-			length = le_to_be(length);
+			READ_U2(&length);
+			SWAP(length);
 
-			uint8_t *bytes = (uint8_t *)malloc(sizeof(uint8_t) * length);
+			uint8_t *bytes = ALLOC(uint8_t, length);
 			fread(bytes, sizeof(uint8_t), length, file);
 			struct cp_info_t cp_info = {
 				.tag = tag,
@@ -288,40 +296,42 @@ void parse_file(FILE *file)
 			printf("Unexpected tag with value %d\n", tag);
 		}
 	}
-	fread(&class.access_flags, sizeof(unsigned short), 1, file);
-	fread(&class.this_class, sizeof(unsigned short), 1, file);
-	fread(&class.super_class, sizeof(unsigned short), 1, file);
-	fread(&class.interfaces_count, sizeof(unsigned short), 1, file);
-	class.interfaces_count = le_to_be(class.interfaces_count);
+	READ_U2(&class.access_flags);
+	READ_U2(&class.this_class);
+	READ_U2(&class.super_class);
+	READ_U2(&class.interfaces_count);
+	SWAP(class.interfaces_count);
 
-	class.interfaces = (unsigned short *)malloc(sizeof(unsigned short) * class.interfaces_count);
+	class.interfaces = ALLOC(unsigned short, class.interfaces_count);
+
 	for (size_t i = 0; i < class.interfaces_count; i++)
 	{
 		unsigned short interface;
-		fread(&interface, sizeof(unsigned short), 1, file);
+		READ_U2(&interface);
 		class.interfaces[i] = interface;
 	}
 
-	fread(&class.fields_count, sizeof(unsigned short), 1, file);
+	READ_U2(&class.fields_count);
+	SWAP(class.fields_count);
 	class.fields_count = le_to_be(class.fields_count);
 	for (size_t i = 0; i < class.fields_count; i++)
 	{
 		unsigned short access_flags, name_index, descriptor_index, attributes_count;
-		fread(&access_flags, sizeof(unsigned short), 1, file);
-		fread(&name_index, sizeof(unsigned short), 1, file);
-		fread(&descriptor_index, sizeof(unsigned short), 1, file);
-		fread(&attributes_count, sizeof(unsigned short), 1, file);
+		READ_U2(&access_flags);
+		READ_U2(&name_index);
+		READ_U2(&descriptor_index);
+		READ_U2(&attributes_count);
 
-		access_flags = le_to_be(access_flags);
-		name_index = le_to_be(name_index);
-		descriptor_index = le_to_be(descriptor_index);
-		attributes_count = le_to_be(attributes_count);
-		struct attribute_info_t *attributes = malloc(sizeof(struct attribute_info_t) * attributes_count);
+		SWAP(access_flags);
+		SWAP(name_index);
+		SWAP(descriptor_index);
+		SWAP(attributes_count);
+		struct attribute_info_t *attributes = ALLOC(struct attribute_info_t, attributes_count);
 		for (size_t k = 0; k < attributes_count; k++)
 		{
 			unsigned short name_index;
 			uint32_t attribute_length;
-			fread(&name_index, sizeof(unsigned short), 1, file);
+			READ_U2(&name_index);
 			fread(&attribute_length, sizeof(uint32_t), 1, file);
 
 			name_index = le_to_be(name_index);
@@ -344,33 +354,33 @@ void parse_file(FILE *file)
 		printf("attribute_count  :: %x, %d\n", attributes_count, attributes_count);
 	}
 
-	fread(&class.methods_count, sizeof(unsigned short), 1, file);
-	class.methods_count = le_to_be(class.methods_count);
-	class.methods = (struct method_info_t *)malloc(sizeof(struct method_info_t) * class.methods_count);
+	READ_U2(&class.methods_count);
+	SWAP(class.methods_count);
+	class.methods = ALLOC(struct method_info_t, class.methods_count);
 	for (size_t i = 0; i < class.methods_count; i++)
 	{
 		unsigned short access_flags, name_index, descriptor_index, attributes_count;
-		fread(&access_flags, sizeof(unsigned short), 1, file);
-		fread(&name_index, sizeof(unsigned short), 1, file);
-		fread(&descriptor_index, sizeof(unsigned short), 1, file);
-		fread(&attributes_count, sizeof(unsigned short), 1, file);
+		READ_U2(&access_flags);
+		READ_U2(&name_index);
+		READ_U2(&descriptor_index);
+		READ_U2(&attributes_count);
 
-		access_flags = le_to_be(access_flags);
-		name_index = le_to_be(name_index);
-		descriptor_index = le_to_be(descriptor_index);
-		attributes_count = le_to_be(attributes_count);
-		struct attribute_info_t *attributes = (struct attribute_info_t *)malloc(sizeof(struct attribute_info_t) * attributes_count);
+		SWAP(access_flags);
+		SWAP(name_index);
+		SWAP(descriptor_index);
+		SWAP(attributes_count);
+		struct attribute_info_t *attributes = ALLOC(struct attribute_info_t, attributes_count);
 
 		for (size_t k = 0; k < attributes_count; k++)
 		{
 			unsigned short name_index;
 			uint32_t attribute_length;
-			fread(&name_index, sizeof(unsigned short), 1, file);
+			READ_U2(&name_index);
 			fread(&attribute_length, sizeof(uint32_t), 1, file);
 
 			name_index = le_to_be(name_index);
 			attribute_length = __builtin_bswap32(attribute_length);
-			unsigned char *bytes = (unsigned char *)malloc(sizeof(unsigned char) * attribute_length);
+			unsigned char *bytes = ALLOC(unsigned char, attribute_length);
 			fread(bytes, sizeof(unsigned char), attribute_length, file);
 
 			struct attribute_info_t attribute = {
@@ -392,9 +402,9 @@ void parse_file(FILE *file)
 		class.methods[i] = method;
 	}
 
-	fread(&class.attribute_count, sizeof(unsigned short), 1, file);
-	class.attribute_count = le_to_be(class.attribute_count);
-	class.attributes = (struct attribute_info_t *)malloc(sizeof(struct attribute_info_t) * class.attribute_count);
+	READ_U2(&class.attribute_count);
+	SWAP(class.attribute_count);
+	class.attributes = ALLOC(struct attribute_info_t, class.attribute_count);
 	for (size_t i = 0; i < class.attribute_count; i++)
 	{
 		unsigned short name_index;
@@ -402,9 +412,9 @@ void parse_file(FILE *file)
 		fread(&name_index, sizeof(unsigned short), 1, file);
 		fread(&attribute_length, sizeof(uint32_t), 1, file);
 
-		name_index = le_to_be(name_index);
+		SWAP(name_index);
 		attribute_length = __builtin_bswap32(attribute_length);
-		unsigned char *bytes = (unsigned char *)malloc(sizeof(unsigned char) * attribute_length);
+		unsigned char *bytes = ALLOC(unsigned char, attribute_length);
 		fread(bytes, sizeof(unsigned char), attribute_length, file);
 
 		struct attribute_info_t attribute = {
@@ -417,11 +427,11 @@ void parse_file(FILE *file)
 
 	// convert them from little-endian to big-endian
 	class.magic = __builtin_bswap32(class.magic);
-	class.minor = le_to_be(class.minor);
-	class.major = le_to_be(class.major);
-	class.access_flags = le_to_be(class.access_flags);
-	class.this_class = le_to_be(class.this_class);
-	class.super_class = le_to_be(class.super_class);
+	SWAP(class.minor);
+	SWAP(class.major);
+	SWAP(class.access_flags);
+	SWAP(class.this_class);
+	SWAP(class.super_class);
 }
 
 int main(int argc, char **argv)
