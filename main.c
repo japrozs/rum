@@ -6,6 +6,7 @@
 
 #include <assert.h>
 #include <inttypes.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -76,6 +77,18 @@ struct constant_string_t {
 
 // TODO: complete this struct
 struct constant_interface_methodref_t {
+    unsigned short class_index;
+    unsigned short name_and_type_index;
+};
+
+struct constant_invoke_dynamic_t {
+    unsigned short bootstrap_method_attr_index;
+    unsigned short name_and_type_index;
+};
+
+struct constant_method_handle_t {
+    uint8_t reference_kind;
+    unsigned short reference_index;
 };
 
 struct cp_info_t {
@@ -87,7 +100,10 @@ struct cp_info_t {
         struct constant_name_and_type_info_t constant_name_and_type_info;
         struct constant_fieldref_t constant_fieldref;
         struct constant_string_t constant_string;
-        struct constant_interface_methodref_t c;
+        // TODO: print the below fields in the `pretty_print` function
+        struct constant_interface_methodref_t constant_interface_methodref;
+        struct constant_invoke_dynamic_t constant_invoke_dynamic;
+        struct constant_method_handle_t constant_method_handle;
     };
 };
 
@@ -321,7 +337,20 @@ void parse_file(FILE* file)
             break;
         }
         case CONSTANT_InterfaceMethodref: {
-            assert(0 && "'CONSTANT_InterfaceMethodref' tag not yet implemented!");
+            unsigned short class_index, name_and_type_index;
+            READ_U2(&class_index);
+            READ_U2(&name_and_type_index);
+
+            SWAP(class_index);
+            SWAP(name_and_type_index);
+
+            struct cp_info_t cp_info = {
+                .tag = tag,
+                .constant_interface_methodref = {
+                    .class_index = class_index,
+                    .name_and_type_index = name_and_type_index }
+            };
+            class.constant_pool[i] = cp_info;
             break;
         }
         case CONSTANT_String: {
@@ -389,7 +418,21 @@ void parse_file(FILE* file)
             break;
         }
         case CONSTANT_MethodHandle: {
-            assert(0 && "'CONSTANT_MethodHandle' tag not yet implemented!\n");
+            uint8_t reference_kind;
+            unsigned short reference_index;
+
+            fread(&reference_kind, sizeof(uint8_t), 1, file);
+            READ_U2(&reference_index);
+            SWAP(reference_index);
+
+            struct cp_info_t cp_info = {
+                .tag = tag,
+                .constant_method_handle = {
+                    .reference_kind = reference_kind,
+                    .reference_index = reference_index }
+            };
+
+            class.constant_pool[i] = cp_info;
             break;
         }
         case CONSTANT_MethodType: {
@@ -397,7 +440,20 @@ void parse_file(FILE* file)
             break;
         }
         case CONSTANT_InvokeDynamic: {
-            assert(0 && "'CONSTANT_InvokeDynamic' tag not yet implemented!");
+            unsigned short bootstrap_method_attr_index, name_and_type_index;
+            READ_U2(&bootstrap_method_attr_index);
+            READ_U2(&name_and_type_index);
+
+            SWAP(bootstrap_method_attr_index);
+            SWAP(name_and_type_index);
+
+            struct cp_info_t cp_info = {
+                .tag = tag,
+                .constant_invoke_dynamic = {
+                    .bootstrap_method_attr_index = bootstrap_method_attr_index,
+                    .name_and_type_index = name_and_type_index }
+            };
+            class.constant_pool[i] = cp_info;
             break;
         }
         default:
@@ -463,12 +519,6 @@ void parse_file(FILE* file)
         };
 
         class.fields[i] = field_info;
-
-        // TODO: complete this by using a class file of a real java codebase file
-        printf("access_flags     :: %x, %d\n", class.fields[i].access_flags, class.fields[i].access_flags);
-        printf("name_index       :: %x, %d\n", class.fields[i].name_index, class.fields[i].name_index);
-        printf("descriptor_index :: %x, %d\n", class.fields[i].descriptor_index, class.fields[i].descriptor_index);
-        printf("attribute_count  :: %x, %d\n", class.fields[i].attributes_count, class.fields[i].attributes_count);
     }
 
     READ_U2(&class.methods_count);
