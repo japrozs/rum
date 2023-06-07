@@ -44,6 +44,7 @@
 #define READ_U2(var) fread(var, sizeof(unsigned short), 1, file)
 #define SWAP(var) var = le_to_be(var) // swap the endian-ness of an unsigned short
 #define ALLOC(type, count) (type*)malloc(sizeof(type) * (count))
+#define PRINT_FLAG(str, flag) sprintf(str, "%s%s" flag, str, strlen(str) == 0 ? "" : ", ");
 
 struct constant_methodref_t {
     unsigned short class_index;
@@ -144,30 +145,29 @@ const char* get_flag(unsigned short flag)
     char* ret = malloc(sizeof(char) * 256);
 
     if (flag & ACC_PUBLIC) {
-        sprintf(ret, "%s%sACC_PUBLIC", ret, strlen(ret) == 0 ? "" : ", ");
-    }
-    if (flag & ACC_PRIVATE) {
-        sprintf(ret, "%s%sACC_PRIVATE", ret, strlen(ret) == 0 ? "" : ", ");
+        PRINT_FLAG(ret, "ACC_PUBLIC");
+    } else if (flag & ACC_PRIVATE) {
+        PRINT_FLAG(ret, "ACC_PRIVATE");
     } else if (flag & ACC_PROTECTED) {
-        sprintf(ret, "%s%sACC_PROTECTED", ret, strlen(ret) == 0 ? "" : ", ");
+        PRINT_FLAG(ret, "ACC_PROTECTED");
     } else if (flag & ACC_STATIC) {
-        sprintf(ret, "%s%sACC_STATIC", ret, strlen(ret) == 0 ? "" : ", ");
+        PRINT_FLAG(ret, "ACC_STATIC");
     } else if (flag & ACC_FINAL) {
-        sprintf(ret, "%s%sACC_FINAL", ret, strlen(ret) == 0 ? "" : ", ");
+        PRINT_FLAG(ret, "ACC_FINAL");
     } else if (flag & ACC_SYNCHRONIZED) {
-        sprintf(ret, "%s%sACC_SYNCHRONIZED", ret, strlen(ret) == 0 ? "" : ", ");
+        PRINT_FLAG(ret, "ACC_SYNCHRONIZED");
     } else if (flag & ACC_BRIDGE) {
-        sprintf(ret, "%s%sACC_BRIDGE", ret, strlen(ret) == 0 ? "" : ", ");
+        PRINT_FLAG(ret, "ACC_BRIDGE");
     } else if (flag & ACC_VARARGS) {
-        sprintf(ret, "%s%sACC_VARARGS", ret, strlen(ret) == 0 ? "" : ", ");
+        PRINT_FLAG(ret, "ACC_VARARGS");
     } else if (flag & ACC_NATIVE) {
-        sprintf(ret, "%s%sACC_NATIVE", ret, strlen(ret) == 0 ? "" : ", ");
+        PRINT_FLAG(ret, "ACC_NATIVE");
     } else if (flag & ACC_ABSTRACT) {
-        sprintf(ret, "%s%sACC_ABSTRACT", ret, strlen(ret) == 0 ? "" : ", ");
+        PRINT_FLAG(ret, "ACC_ABSTRACT");
     } else if (flag & ACC_STRICT) {
-        sprintf(ret, "%s%sACC_STRICT", ret, strlen(ret) == 0 ? "" : ", ");
+        PRINT_FLAG(ret, "ACC_STRICT");
     } else if (flag & ACC_SYNTHETIC) {
-        sprintf(ret, "%s%sACC_SYNTHETIC", ret, strlen(ret) == 0 ? "" : ", ");
+        PRINT_FLAG(ret, "ACC_SYNTHETIC");
     }
     return strlen(ret) == 0 ? "<unknown flag>" : ret;
 }
