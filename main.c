@@ -285,13 +285,13 @@ void pretty_print()
                "\tname_index            : %d\n"
                "\tdescriptor_index      : %d\n"
                "\tattributes_count      : %d\n",
-            get_flag(class.methods[i].access_flags), class.methods[i].name_index, class.methods[i].descriptor_index, class.methods[i].attributes_count);
-        printf("\tattributes            -> %s", class.methods[i].attributes_count == 0 ? "[]\n" : "\n");
-        for (size_t k = 0; k < class.methods[i].attributes_count; k++) {
+            get_flag(class.fields[i].access_flags), class.fields[i].name_index, class.fields[i].descriptor_index, class.fields[i].attributes_count);
+        printf("\tattributes            -> %s", class.fields[i].attributes_count == 0 ? "[]\n" : "\n");
+        for (size_t k = 0; k < class.fields[i].attributes_count; k++) {
             printf("\t\tattribute_name_index    : %d\n"
                    "\t\tattribute_length        : %d\n"
                    "\t\tinfo                    : \"%s\"\n",
-                class.methods[i].attributes[k].attribute_name_index, class.methods[i].attributes[k].attribute_length, class.methods[i].attributes[k].info);
+                class.fields[i].attributes[k].attribute_name_index, class.fields[i].attributes[k].attribute_length, class.fields[i].attributes[k].info);
         }
         printf("\t\t----------------------------\n");
     }

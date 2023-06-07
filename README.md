@@ -168,3 +168,6 @@ attributes            ->
 	info                    : ""
 	----------------------------
 ```
+
+## Credits
+All the sample Java files for testing purposes have been copied directly from [William Fiset's DSA repository](https://github.com/williamfiset/DEPRECATED-data-structures)
