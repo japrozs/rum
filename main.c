@@ -138,6 +138,69 @@ struct class_t
 
 struct class_t class; // the main class struct
 
+void pretty_print()
+{
+	printf("magic                 : %x\n"
+		   "minor                 : %d\n"
+		   "major                 : %d\n"
+		   "constant_pool_count   : %d\n"
+		   "constant_pool         ->\n",
+		   class.magic, class.minor, class.major, class.constant_pool_count);
+	for (size_t i = 0; i < class.constant_pool_count - 1; i++)
+	{
+		printf("\ttag                   : %d\n", class.constant_pool[i].tag);
+		if (class.constant_pool[i].tag == CONSTANT_Methodref)
+		{
+			printf("\tclass_index           : %d\n", class.constant_pool[i].constant_methodref.class_index);
+			printf("\tname_and_type_index   : %d\n", class.constant_pool[i].constant_methodref.name_and_type_index);
+		}
+		else if (class.constant_pool[i].tag == CONSTANT_Utf8)
+		{
+			printf("\tlength                : %d\n", class.constant_pool[i].constant_utf8.length);
+			printf("\tbytes                 : %s\n", class.constant_pool[i].constant_utf8.bytes);
+		}
+		else if (class.constant_pool[i].tag == CONSTANT_Class)
+		{
+			printf("\tname_index            : %d\n", class.constant_pool[i].constant_class.name_index);
+		}
+		else if (class.constant_pool[i].tag == CONSTANT_NameAndType)
+		{
+			printf("\tname_index            : %d\n", class.constant_pool[i].constant_name_and_type_info.name_index);
+			printf("\tdescriptor_index      : %d\n", class.constant_pool[i].constant_name_and_type_info.descriptor_index);
+		}
+		else if (class.constant_pool[i].tag == CONSTANT_Fieldref)
+		{
+			printf("\tclass_index          : %d\n", class.constant_pool[i].constant_fieldref.class_index);
+			printf("\tname_and_type_index  : %d\n", class.constant_pool[i].constant_fieldref.name_and_type_index);
+		}
+		else if (class.constant_pool[i].tag == CONSTANT_String)
+		{
+			printf("\tstring_index         : %d\n", class.constant_pool[i].constant_string.string_index);
+		}
+		else
+		{
+			printf("\tunknown tag value '%d'\n", class.constant_pool[i].tag);
+		}
+		printf("\t-------------------------\n");
+	}
+	printf("access_flags          : %d\n"
+		   "this_class            : %d\n"
+		   "super_class           : %d\n"
+		   "interfaces_count      : %d\n"
+		   "interfaces            ->\n",
+		   class.access_flags, class.this_class, class.super_class, class.interfaces_count);
+	for (size_t i = 0; i < class.interfaces_count; i++)
+	{
+		printf("interface count %zu    : %d\n", i, class.interfaces[i]);
+	}
+	printf("fields_count          : %d\n", class.fields_count);
+	// TODO: Display fields
+	for (size_t i = 0; i < class.fields_count; i++)
+	{
+	}
+	printf("fields_count          : %d\n", class.fields_count);
+}
+
 unsigned short le_to_be(unsigned short bytes)
 {
 	unsigned short result = ((bytes & 0xFF) << 8) | ((bytes & 0xFF00) >> 8);
@@ -183,7 +246,12 @@ void parse_file(FILE *file)
 			SWAP(class_index);
 			SWAP(name_and_type_index);
 
-			// TODO: create a struct and store the above values
+			struct cp_info_t cp_info = {
+				.tag = tag,
+				.constant_fieldref = {
+					.class_index = class_index,
+					.name_and_type_index = name_and_type_index}};
+			class.constant_pool[i] = cp_info;
 			break;
 		}
 		case CONSTANT_Methodref:
@@ -450,15 +518,16 @@ int main(int argc, char **argv)
 
 	// parse the file and map it into the `class_t` struct
 	parse_file(file);
+	pretty_print();
 
-	printf("magic       		: %x\n", class.magic);
-	printf("minor       		: %x, %d\n", class.minor, class.minor);
-	printf("major       		: %x, %d\n", class.major, class.major);
-	printf("constant_pool_count	: %x, %d\n", class.constant_pool_count, class.constant_pool_count);
-	printf("access_flags   		: %x, %d\n", class.access_flags, class.access_flags);
-	printf("this_class     		: %x, %d\n", class.this_class, class.this_class);
-	printf("super_class   		: %x, %d\n", class.super_class, class.super_class);
-	printf("interfaces_count	: %x, %d\n", class.interfaces_count, class.interfaces_count);
+	// printf("magic       		: %x\n", class.magic);
+	// printf("minor       		: %x, %d\n", class.minor, class.minor);
+	// printf("major       		: %x, %d\n", class.major, class.major);
+	// printf("constant_pool_count	: %x, %d\n", class.constant_pool_count, class.constant_pool_count);
+	// printf("access_flags   		: %x, %d\n", class.access_flags, class.access_flags);
+	// printf("this_class     		: %x, %d\n", class.this_class, class.this_class);
+	// printf("super_class   		: %x, %d\n", class.super_class, class.super_class);
+	// printf("interfaces_count	: %x, %d\n", class.interfaces_count, class.interfaces_count);
 
 	return EXIT_SUCCESS;
 }
