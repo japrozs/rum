@@ -11,4 +11,4 @@ jobs:
               with:
                   version: latest
                   platform: x64
-            - run: ./make.sh && ./out/rum Main.class
+            - run: ./make.sh && ./test.sh

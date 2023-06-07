@@ -6,6 +6,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 #include <inttypes.h>
 
 // cp_info_tag values
@@ -143,9 +144,19 @@ void pretty_print()
 	printf("magic                 : %x\n"
 		   "minor                 : %d\n"
 		   "major                 : %d\n"
-		   "constant_pool_count   : %d\n"
-		   "constant_pool         ->\n",
+		   "constant_pool_count   : %d\n",
 		   class.magic, class.minor, class.major, class.constant_pool_count);
+	printf("attribute_count       : %d\n", class.attribute_count);
+	printf("access_flags          : %d\n"
+		   "this_class            : %d\n"
+		   "super_class           : %d\n"
+		   "interfaces_count      : %d\n",
+		   class.access_flags,
+		   class.this_class, class.super_class, class.interfaces_count);
+	printf("fields_count          : %d\n", class.fields_count);
+	printf("methods_count         : %d\n", class.methods_count);
+	printf("interfaces           -> %s", class.interfaces_count == 0 ? "[]\n" : "\n");
+	printf("constant_pool        -> %s", class.constant_pool_count == 0 ? "[]\n" : "\n");
 	for (size_t i = 0; i < class.constant_pool_count - 1; i++)
 	{
 		printf("\ttag                   : %d\n", class.constant_pool[i].tag);
@@ -157,7 +168,7 @@ void pretty_print()
 		else if (class.constant_pool[i].tag == CONSTANT_Utf8)
 		{
 			printf("\tlength                : %d\n", class.constant_pool[i].constant_utf8.length);
-			printf("\tbytes                 : %s\n", class.constant_pool[i].constant_utf8.bytes);
+			printf("\tbytes                 : \"%s\"\n", class.constant_pool[i].constant_utf8.bytes);
 		}
 		else if (class.constant_pool[i].tag == CONSTANT_Class)
 		{
@@ -183,22 +194,55 @@ void pretty_print()
 		}
 		printf("\t-------------------------\n");
 	}
-	printf("access_flags          : %d\n"
-		   "this_class            : %d\n"
-		   "super_class           : %d\n"
-		   "interfaces_count      : %d\n"
-		   "interfaces            ->\n",
-		   class.access_flags, class.this_class, class.super_class, class.interfaces_count);
 	for (size_t i = 0; i < class.interfaces_count; i++)
 	{
 		printf("interface count %zu    : %d\n", i, class.interfaces[i]);
 	}
-	printf("fields_count          : %d\n", class.fields_count);
-	// TODO: Display fields
+	printf("fields                -> %s", class.fields_count == 0 ? "[]\n" : "\n");
 	for (size_t i = 0; i < class.fields_count; i++)
 	{
+		printf("\taccess_flags          : %d\n"
+			   "\tname_index            : %d\n"
+			   "\tdescriptor_index      : %d\n"
+			   "\tattributes_count      : %d\n",
+			   class.methods[i].access_flags, class.methods[i].name_index, class.methods[i].descriptor_index, class.methods[i].attributes_count);
+		printf("\tattributes            -> %s", class.methods[i].attributes_count == 0 ? "[]\n" : "\n");
+		for (size_t k = 0; k < class.methods[i].attributes_count; k++)
+		{
+			printf("\t\tattribute_name_index    : %d\n"
+				   "\t\tattribute_length        : %d\n"
+				   "\t\tinfo                    : \"%s\"\n",
+				   class.methods[i].attributes[k].attribute_name_index, class.methods[i].attributes[k].attribute_length, class.methods[i].attributes[k].info);
+		}
+		printf("\t\t----------------------------\n");
 	}
-	printf("fields_count          : %d\n", class.fields_count);
+	printf("methods               -> %s", class.methods_count == 0 ? "[]\n" : "\n");
+	for (size_t i = 0; i < class.methods_count; i++)
+	{
+		printf("\taccess_flags          : %d\n"
+			   "\tname_index            : %d\n"
+			   "\tdescriptor_index      : %d\n"
+			   "\tattributes_count      : %d\n",
+			   class.methods[i].access_flags, class.methods[i].name_index, class.methods[i].descriptor_index, class.methods[i].attributes_count);
+		printf("\tattributes            -> %s", class.methods[i].attributes_count == 0 ? "[]\n" : "\n");
+		for (size_t k = 0; k < class.methods[i].attributes_count; k++)
+		{
+			printf("\t\tattribute_name_index    : %d\n"
+				   "\t\tattribute_length        : %d\n"
+				   "\t\tinfo                    : \"%s\"\n",
+				   class.methods[i].attributes[k].attribute_name_index, class.methods[i].attributes[k].attribute_length, class.methods[i].attributes[k].info);
+		}
+		printf("\t\t----------------------------\n");
+	}
+	printf("attributes            -> %s", class.attribute_count == 0 ? "[]\n" : "\n");
+	for (size_t i = 0; i < class.attribute_count; i++)
+	{
+		printf("\tattribute_name_index    : %d\n"
+			   "\tattribute_length        : %d\n"
+			   "\tinfo                    : \"%s\"\n",
+			   class.attributes[i].attribute_name_index, class.attributes[i].attribute_length, class.attributes[i].info);
+		printf("\t----------------------------\n");
+	}
 }
 
 unsigned short le_to_be(unsigned short bytes)
@@ -274,7 +318,7 @@ void parse_file(FILE *file)
 		}
 		case CONSTANT_InterfaceMethodref:
 		{
-			printf("'CONSTANT_InterfaceMethodref' tag not yet implemented!\n");
+			assert(0 && "'CONSTANT_InterfaceMethodref' tag not yet implemented!");
 			break;
 		}
 		case CONSTANT_String:
@@ -292,22 +336,22 @@ void parse_file(FILE *file)
 		}
 		case CONSTANT_Integer:
 		{
-			printf("'CONSTANT_Integer' tag not yet implemented!\n");
+			assert(0 && "'CONSTANT_Integer' tag not yet implemented!");
 			break;
 		}
 		case CONSTANT_Float:
 		{
-			printf("'CONSTANT_Float' tag not yet implemented!\n");
+			assert(0 && "'CONSTANT_Float' tag not yet implemented!");
 			break;
 		}
 		case CONSTANT_Long:
 		{
-			printf("'CONSTANT_Long' tag not yet implemented!\n");
+			assert(0 && "'CONSTANT_Long' tag not yet implemented!");
 			break;
 		}
 		case CONSTANT_Double:
 		{
-			printf("'CONSTANT_Double' tag not yet implemented!\n");
+			assert(0 && "'CONSTANT_Double' tag not yet implemented!");
 			break;
 		}
 		case CONSTANT_NameAndType:
@@ -347,21 +391,22 @@ void parse_file(FILE *file)
 		}
 		case CONSTANT_MethodHandle:
 		{
-			printf("'CONSTANT_MethodHandle' tag not yet implemented!\n");
+			assert(0 && "'CONSTANT_MethodHandle' tag not yet implemented!\n");
 			break;
 		}
 		case CONSTANT_MethodType:
 		{
-			printf("'CONSTANT_MethodType' tag not yet implemented!\n");
+			assert(0 && "'CONSTANT_MethodType' tag not yet implemented!\n");
 			break;
 		}
 		case CONSTANT_InvokeDynamic:
 		{
-			printf("'CONSTANT_InvokeDynamic' tag not yet implemented!\n");
+			assert(0 && "'CONSTANT_InvokeDynamic' tag not yet implemented!");
 			break;
 		}
 		default:
 			printf("Unexpected tag with value %d\n", tag);
+			exit(EXIT_FAILURE);
 		}
 	}
 	READ_U2(&class.access_flags);
@@ -381,7 +426,7 @@ void parse_file(FILE *file)
 
 	READ_U2(&class.fields_count);
 	SWAP(class.fields_count);
-	class.fields_count = le_to_be(class.fields_count);
+	class.fields = ALLOC(struct field_info_t, class.fields_count);
 	for (size_t i = 0; i < class.fields_count; i++)
 	{
 		unsigned short access_flags, name_index, descriptor_index, attributes_count;
@@ -415,11 +460,20 @@ void parse_file(FILE *file)
 			attributes[k] = attribute;
 		}
 
+		struct field_info_t field_info = {
+			.access_flags = access_flags,
+			.name_index = name_index,
+			.descriptor_index = descriptor_index,
+			.attributes_count = attributes_count,
+			.attributes = attributes};
+
+		class.fields[i] = field_info;
+
 		// TODO: complete this by using a class file of a real java codebase file
-		printf("access_flags     :: %x, %d\n", access_flags, access_flags);
-		printf("name_index       :: %x, %d\n", name_index, name_index);
-		printf("descriptor_index :: %x, %d\n", descriptor_index, descriptor_index);
-		printf("attribute_count  :: %x, %d\n", attributes_count, attributes_count);
+		printf("access_flags     :: %x, %d\n", class.fields[i].access_flags, class.fields[i].access_flags);
+		printf("name_index       :: %x, %d\n", class.fields[i].name_index, class.fields[i].name_index);
+		printf("descriptor_index :: %x, %d\n", class.fields[i].descriptor_index, class.fields[i].descriptor_index);
+		printf("attribute_count  :: %x, %d\n", class.fields[i].attributes_count, class.fields[i].attributes_count);
 	}
 
 	READ_U2(&class.methods_count);
