@@ -1,12 +1,13 @@
 # Rum
 
-Rum is a somewhat-spec compliant parser for the Java Class File Format that is capable of parsing a Java Class file generate by a simple hello world program.
-
+Rum is a fully-spec compliant parser for the Java Class File Format that is capable of parsing a Java Class file generate by a simple hello world program.
 
 > `PLEASE DON'T READ THE CODE IF YOU VALUE YOUR MENTAL HEALTH. THE CODE IS EXTREMELY EXTREMELY BAD, ALTHOUGH FUNCTIONAL ;)`
 
 ## Usage
+
 To build `rum`, run the following commands:
+
 ```bash
 git clone https://github.com/japrozs/rum.git
 cd rum
@@ -15,12 +16,14 @@ cd rum
 ```
 
 to run test, on the [sample files](./samples), run the following commands:
+
 ```bash
 ./make.sh
 ./test.sh
 ```
 
 running `rum` on a [hello-world program](./samples/Main.java) yields the following results
+
 ```sh
 magic                 : cafebabe
 minor                 : 0
@@ -34,7 +37,7 @@ interfaces_count      : 0
 fields_count          : 0
 methods_count         : 2
 interfaces           -> []
-constant_pool        -> 
+constant_pool        ->
 	tag                   : CONSTANT_Methodref
 	class_index           : 2
 	name_and_type_index   : 3
@@ -143,12 +146,12 @@ constant_pool        ->
 	bytes                 : "Main.java"
 	-------------------------
 fields                -> []
-methods               -> 
+methods               ->
 	access_flags          : ACC_PUBLIC
 	name_index            : 5
 	descriptor_index      : 6
 	attributes_count      : 1
-	attributes            -> 
+	attributes            ->
 		attribute_name_index    : 23
 		attribute_length        : 29
 		info                    : ""
@@ -157,12 +160,12 @@ methods               ->
 	name_index            : 25
 	descriptor_index      : 26
 	attributes_count      : 1
-	attributes            -> 
+	attributes            ->
 		attribute_name_index    : 23
 		attribute_length        : 37
 		info                    : ""
 		----------------------------
-attributes            -> 
+attributes            ->
 	attribute_name_index    : 27
 	attribute_length        : 2
 	info                    : ""
@@ -170,7 +173,9 @@ attributes            ->
 ```
 
 ## Credits
+
 All the sample Java files for testing purposes have been copied directly from [William Fiset's DSA repository](https://github.com/williamfiset/DEPRECATED-data-structures)
 
 ## Reference
+
 [`Java Class File Format`](https://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html)
