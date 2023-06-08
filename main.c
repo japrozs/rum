@@ -27,19 +27,40 @@
 #define CONSTANT_MethodType 16
 #define CONSTANT_InvokeDynamic 18
 
-// access_flags mask table
+// method_info access_flags mask table
+#define METHOD_INFO_ACC_PUBLIC 0x0001
+#define METHOD_INFO_ACC_PRIVATE 0x0002
+#define METHOD_INFO_ACC_PROTECTED 0x0004
+#define METHOD_INFO_ACC_STATIC 0x0008
+#define METHOD_INFO_ACC_FINAL 0x0010
+#define METHOD_INFO_ACC_SYNCHRONIZED 0x0020
+#define METHOD_INFO_ACC_BRIDGE 0x0040
+#define METHOD_INFO_ACC_VARARGS 0x0080
+#define METHOD_INFO_ACC_NATIVE 0x0100
+#define METHOD_INFO_ACC_ABSTRACT 0x0400
+#define METHOD_INFO_ACC_STRICT 0x0800
+#define METHOD_INFO_ACC_SYNTHETIC 0x1000
+
+// class file access_flags mask table
 #define ACC_PUBLIC 0x0001
-#define ACC_PRIVATE 0x0002
-#define ACC_PROTECTED 0x0004
-#define ACC_STATIC 0x0008
 #define ACC_FINAL 0x0010
-#define ACC_SYNCHRONIZED 0x0020
-#define ACC_BRIDGE 0x0040
-#define ACC_VARARGS 0x0080
-#define ACC_NATIVE 0x0100
+#define ACC_SUPER 0x0020
+#define ACC_INTERFACE 0x0200
 #define ACC_ABSTRACT 0x0400
-#define ACC_STRICT 0x0800
 #define ACC_SYNTHETIC 0x1000
+#define ACC_ANNOTATION 0x2000
+#define ACC_ENUM 0x4000
+
+// field_info access_flags mask table
+#define FIELD_INFO_ACC_PUBLIC 0x0001
+#define FIELD_INFO_ACC_PRIVATE 0x0002
+#define FIELD_INFO_ACC_PROTECTED 0x0004
+#define FIELD_INFO_ACC_STATIC 0x0008
+#define FIELD_INFO_ACC_FINAL 0x0010
+#define FIELD_INFO_ACC_VOLATILE 0x0040
+#define FIELD_INFO_ACC_TRANSIENT 0x0080
+#define FIELD_INFO_ACC_SYNTHETIC 0x1000
+#define FIELD_INFO_ACC_ENUM 0x4000
 
 // helpful macros
 #define READ_U2(var) fread(var, sizeof(unsigned short), 1, file)
@@ -191,44 +212,108 @@ const char* get_tag_name(uint8_t tag)
     }
 }
 
-char* get_flag(unsigned short flag)
+char* get_access_flags(unsigned short flag)
 {
     char* ret = malloc(sizeof(char) * 256);
-
     if (flag & ACC_PUBLIC) {
         PRINT_FLAG(ret, "ACC_PUBLIC");
-    }
-    if (flag & ACC_PRIVATE) {
-        PRINT_FLAG(ret, "ACC_PRIVATE");
-    }
-    if (flag & ACC_PROTECTED) {
-        PRINT_FLAG(ret, "ACC_PROTECTED");
-    }
-    if (flag & ACC_STATIC) {
-        PRINT_FLAG(ret, "ACC_STATIC");
     }
     if (flag & ACC_FINAL) {
         PRINT_FLAG(ret, "ACC_FINAL");
     }
-    if (flag & ACC_SYNCHRONIZED) {
-        PRINT_FLAG(ret, "ACC_SYNCHRONIZED");
+    if (flag & ACC_SUPER) {
+        PRINT_FLAG(ret, "ACC_SUPER");
     }
-    if (flag & ACC_BRIDGE) {
-        PRINT_FLAG(ret, "ACC_BRIDGE");
-    }
-    if (flag & ACC_VARARGS) {
-        PRINT_FLAG(ret, "ACC_VARARGS");
-    }
-    if (flag & ACC_NATIVE) {
-        PRINT_FLAG(ret, "ACC_NATIVE");
+    if (flag & ACC_INTERFACE) {
+        PRINT_FLAG(ret, "ACC_INTERFACE");
     }
     if (flag & ACC_ABSTRACT) {
         PRINT_FLAG(ret, "ACC_ABSTRACT");
     }
-    if (flag & ACC_STRICT) {
+    if (flag & ACC_SYNTHETIC) {
+        PRINT_FLAG(ret, "ACC_SYNTHETIC");
+    }
+    if (flag & ACC_ANNOTATION) {
+        PRINT_FLAG(ret, "ACC_ANNOTATION");
+    }
+    if (flag & ACC_ENUM) {
+        PRINT_FLAG(ret, "ACC_ENUM");
+    }
+    return strlen(ret) == 0 ? "<unknown flag>" : ret;
+}
+
+char* get_field_info_access_flags(unsigned short flag)
+{
+    char* ret = malloc(sizeof(char) * 256);
+
+    if (flag & FIELD_INFO_ACC_PUBLIC) {
+        PRINT_FLAG(ret, "ACC_PUBLIC");
+    }
+    if (flag & FIELD_INFO_ACC_PRIVATE) {
+        PRINT_FLAG(ret, "ACC_PRIVATE");
+    }
+    if (flag & FIELD_INFO_ACC_PROTECTED) {
+        PRINT_FLAG(ret, "ACC_PROTECTED");
+    }
+    if (flag & FIELD_INFO_ACC_STATIC) {
+        PRINT_FLAG(ret, "ACC_STATIC");
+    }
+    if (flag & FIELD_INFO_ACC_FINAL) {
+        PRINT_FLAG(ret, "ACC_FINAL");
+    }
+    if (flag & FIELD_INFO_ACC_VOLATILE) {
+        PRINT_FLAG(ret, "ACC_VOLATILE");
+    }
+    if (flag & FIELD_INFO_ACC_TRANSIENT) {
+        PRINT_FLAG(ret, "ACC_TRANSIENT");
+    }
+    if (flag & FIELD_INFO_ACC_SYNTHETIC) {
+        PRINT_FLAG(ret, "ACC_SYNTHETIC");
+    }
+    if (flag & FIELD_INFO_ACC_ENUM) {
+        PRINT_FLAG(ret, "ACC_ENUM");
+    }
+    return strlen(ret) == 0 ? "<unknown flag>" : ret;
+}
+
+char* get_method_info_access_flags(unsigned short flag)
+{
+    char* ret = malloc(sizeof(char) * 256);
+
+    if (flag & METHOD_INFO_ACC_PUBLIC) {
+        PRINT_FLAG(ret, "ACC_PUBLIC");
+    }
+    if (flag & METHOD_INFO_ACC_PRIVATE) {
+        PRINT_FLAG(ret, "ACC_PRIVATE");
+    }
+    if (flag & METHOD_INFO_ACC_PROTECTED) {
+        PRINT_FLAG(ret, "ACC_PROTECTED");
+    }
+    if (flag & METHOD_INFO_ACC_STATIC) {
+        PRINT_FLAG(ret, "ACC_STATIC");
+    }
+    if (flag & METHOD_INFO_ACC_FINAL) {
+        PRINT_FLAG(ret, "ACC_FINAL");
+    }
+    if (flag & METHOD_INFO_ACC_SYNCHRONIZED) {
+        PRINT_FLAG(ret, "ACC_SYNCHRONIZED");
+    }
+    if (flag & METHOD_INFO_ACC_BRIDGE) {
+        PRINT_FLAG(ret, "ACC_BRIDGE");
+    }
+    if (flag & METHOD_INFO_ACC_VARARGS) {
+        PRINT_FLAG(ret, "ACC_VARARGS");
+    }
+    if (flag & METHOD_INFO_ACC_NATIVE) {
+        PRINT_FLAG(ret, "ACC_NATIVE");
+    }
+    if (flag & METHOD_INFO_ACC_ABSTRACT) {
+        PRINT_FLAG(ret, "ACC_ABSTRACT");
+    }
+    if (flag & METHOD_INFO_ACC_STRICT) {
         PRINT_FLAG(ret, "ACC_STRICT");
     }
-    if (flag & ACC_SYNTHETIC) {
+    if (flag & METHOD_INFO_ACC_SYNTHETIC) {
         PRINT_FLAG(ret, "ACC_SYNTHETIC");
     }
     return strlen(ret) == 0 ? "<unknown flag>" : ret;
@@ -266,17 +351,17 @@ void cleanup()
 
 void pretty_print()
 {
-    printf("magic                 : %x\n"
+    printf("magic                 : 0x%x\n"
            "minor                 : %d\n"
            "major                 : %d\n"
            "constant_pool_count   : %d\n",
         class.magic, class.minor, class.major, class.constant_pool_count);
     printf("attribute_count       : %d\n", class.attribute_count);
-    printf("access_flags          : %d\n"
+    printf("access_flags          : 0x%x – %s\n"
            "this_class            : %d\n"
            "super_class           : %d\n"
            "interfaces_count      : %d\n",
-        class.access_flags,
+        class.access_flags, get_access_flags(class.access_flags),
         class.this_class, class.super_class, class.interfaces_count);
     printf("fields_count          : %d\n", class.fields_count);
     printf("methods_count         : %d\n", class.methods_count);
@@ -310,13 +395,11 @@ void pretty_print()
     }
     printf("fields                -> %s", class.fields_count == 0 ? "[]\n" : "\n");
     for (size_t i = 0; i < class.fields_count; i++) {
-        char* access_flags = get_flag(class.fields[i].access_flags);
-        printf("\taccess_flags          : %s\n"
+        printf("\taccess_flags          : 0x%.4x – %s\n"
                "\tname_index            : %d\n"
                "\tdescriptor_index      : %d\n"
                "\tattributes_count      : %d\n",
-            access_flags, class.fields[i].name_index, class.fields[i].descriptor_index, class.fields[i].attributes_count);
-        free(access_flags);
+            class.fields[i].access_flags, get_field_info_access_flags(class.fields[i].access_flags), class.fields[i].name_index, class.fields[i].descriptor_index, class.fields[i].attributes_count);
         printf("\tattributes            -> %s", class.fields[i].attributes_count == 0 ? "[]\n" : "\n");
         for (size_t k = 0; k < class.fields[i].attributes_count; k++) {
             printf("\t\tattribute_name_index    : %d\n"
@@ -328,13 +411,11 @@ void pretty_print()
     }
     printf("methods               -> %s", class.methods_count == 0 ? "[]\n" : "\n");
     for (size_t i = 0; i < class.methods_count; i++) {
-        char* access_flags = get_flag(class.methods[i].access_flags);
-        printf("\taccess_flags          : %s\n"
+        printf("\taccess_flags          : 0x%.4x – %s\n"
                "\tname_index            : %d\n"
                "\tdescriptor_index      : %d\n"
                "\tattributes_count      : %d\n",
-            access_flags, class.methods[i].name_index, class.methods[i].descriptor_index, class.methods[i].attributes_count);
-        free(access_flags);
+            class.methods[i].access_flags, get_method_info_access_flags(class.methods[i].access_flags), class.methods[i].name_index, class.methods[i].descriptor_index, class.methods[i].attributes_count);
         printf("\tattributes            -> %s", class.methods[i].attributes_count == 0 ? "[]\n" : "\n");
         for (size_t k = 0; k < class.methods[i].attributes_count; k++) {
             printf("\t\tattribute_name_index    : %d\n"

@@ -171,3 +171,6 @@ attributes            ->
 
 ## Credits
 All the sample Java files for testing purposes have been copied directly from [William Fiset's DSA repository](https://github.com/williamfiset/DEPRECATED-data-structures)
+
+## Reference
+[`Java Class File Format`](https://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html)
