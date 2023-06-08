@@ -1,4 +1,5 @@
 #! /bin/sh
+
 EXIT_CODE=0
 for file in samples/*.class; do
 	./out/rum $file > /dev/null
