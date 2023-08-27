@@ -395,7 +395,7 @@ char *get_method_info_access_flags(unsigned short flag)
     return strlen(ret) == 0 ? "<unknown flag>" : ret;
 }
 
-void cleanup()
+void cleanup(void)
 {
     for (int i = 0; i < class.constant_pool_count - 1; i++)
     {
@@ -432,7 +432,7 @@ void cleanup()
     free(class.attributes);
 }
 
-void pretty_print()
+void pretty_print(void)
 {
     printf("magic                 : 0x%x\n"
            "minor                 : %d\n"
